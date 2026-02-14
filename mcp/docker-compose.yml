@@ -1,0 +1,19 @@
+services:
+  xiaohongshu-mcp:
+    image: xpzouying/xiaohongshu-mcp:latest
+    container_name: xiaohongshu-mcp
+    restart: unless-stopped
+    init: true
+    tty: true
+    platform: linux/amd64
+    volumes:
+      # 挂载 cookies 数据
+      - ./data:/app/data
+      # 挂载图片目录
+      - ./images:/app/images
+      # 挂载后端生成的配图（MCP 发布时需要）
+      - ../backend/static/images:/app/data/images
+    environment:
+      - COOKIES_PATH=/app/data/cookies.json
+    ports:
+      - "18060:18060"

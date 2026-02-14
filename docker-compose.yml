@@ -1,0 +1,191 @@
+version: '3.8'
+
+services:
+  # 1. Nginx网关
+  nginx:
+    image: nginx:alpine
+    container_name: xhs_nginx
+    environment:
+      - TZ=Asia/Shanghai
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./frontend/dist:/usr/share/nginx/html:ro
+    depends_on:
+      - api
+    networks:
+      - xhs-network
+    restart: unless-stopped
+
+  # 2. API服务
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: xhs_api
+    env_file:
+      - .env
+    environment:
+      - TZ=Asia/Shanghai
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/xhs_platform
+      - REDIS_URL=redis://redis:6379/0
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+      - API_KEY=xhs_agent_internal_key_2025
+      - DEBUG=true
+      # LLM 配置 - 支持方舟/Kimi/OpenAI
+      # 方舟大模型 (Volcengine/字节跳动)
+      - ARK_API_KEY=${ARK_API_KEY:-}
+      - ARK_BASE_URL=${ARK_BASE_URL:-https://ark.cn-beijing.volces.com/api/v3}
+      - ARK_MODEL_ENDPOINT=${ARK_MODEL_ENDPOINT:-}
+      # 方舟图像生成 (Seedream)
+      - ARK_IMAGE_ENDPOINT=${ARK_IMAGE_ENDPOINT:-}
+      # Kimi (Moonshot)
+      - KIMI_API_KEY=${KIMI_API_KEY:-}
+      # OpenAI
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL:-https://api.openai.com/v1}
+      # 默认提供商 (ark/kimi/openai)
+      - DEFAULT_LLM_PROVIDER=${DEFAULT_LLM_PROVIDER:-ark}
+      # MCP 服务配置 (Docker 环境使用 host.docker.internal 访问宿主机)
+      - MCP_URL=http://host.docker.internal:18060/mcp
+      - MCP_ENABLED=true
+      # 小红书账号 UserID
+      - XHS_USER_ID=5b52f8f611be101ae93e1671
+      # 前端地址和飞书通知配置
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost}
+      - FEISHU_WEBHOOK_URL=${FEISHU_WEBHOOK_URL:-}
+    volumes:
+      # 开发模式：挂载代码，修改后立即生效
+      - ./backend/app:/app/app:ro
+      # 挂载小红书 Cookie 文件
+      - ./mcp/data/cookies.json:/app/data/cookies.json:ro
+      # Docker socket 和客户端用于获取容器日志
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /usr/local/bin/docker:/usr/bin/docker:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - xhs-network
+    restart: unless-stopped
+    # 不暴露端口，只通过nginx访问
+
+  # 3. Celery Worker
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: xhs_worker
+    command: celery -A app.tasks.celery_app worker -l info -c 4
+    env_file:
+      - .env
+    environment:
+      - TZ=Asia/Shanghai
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/xhs_platform
+      - REDIS_URL=redis://redis:6379/0
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+      - API_KEY=xhs_agent_internal_key_2025
+      - MCP_URL=http://host.docker.internal:18060/mcp
+      - MCP_ENABLED=true
+      - XHS_USER_ID=5b52f8f611be101ae93e1671
+    depends_on:
+      - postgres
+      - rabbitmq
+    networks:
+      - xhs-network
+    restart: unless-stopped
+
+  # 4. Celery Beat定时调度
+  scheduler:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: xhs_scheduler
+    command: celery -A app.tasks.celery_app beat -l info
+    env_file:
+      - .env
+    environment:
+      - TZ=Asia/Shanghai
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/xhs_platform
+      - REDIS_URL=redis://redis:6379/0
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+      - API_KEY=xhs_agent_internal_key_2025
+      - MCP_URL=http://host.docker.internal:18060/mcp
+      - MCP_ENABLED=true
+      - XHS_USER_ID=5b52f8f611be101ae93e1671
+    depends_on:
+      - postgres
+      - rabbitmq
+    networks:
+      - xhs-network
+    restart: unless-stopped
+
+  # 5. PostgreSQL数据库
+  postgres:
+    image: postgres:15-alpine
+    container_name: xhs_postgres
+    environment:
+      - TZ=Asia/Shanghai
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=xhs_platform
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - xhs-network
+    restart: unless-stopped
+
+  # 6. Redis缓存
+  redis:
+    image: redis:7-alpine
+    container_name: xhs_redis
+    environment:
+      - TZ=Asia/Shanghai
+    volumes:
+      - redis_data:/data
+    networks:
+      - xhs-network
+    restart: unless-stopped
+
+  # 7. RabbitMQ消息队列
+  rabbitmq:
+    image: rabbitmq:3-alpine
+    container_name: xhs_rabbitmq
+    environment:
+      - TZ=Asia/Shanghai
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - xhs-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  rabbitmq_data:
+
+  # 8. MCP 服务（外部运行，通过 host.docker.internal 访问）
+  # 小红书 MCP 服务在独立的 docker-compose 中运行
+  # 访问地址: http://host.docker.internal:18060/mcp
+
+networks:
+  xhs-network:
+    driver: bridge
+  # 如果需要直接连接 MCP 容器网络，取消下面注释
+  # mcp-network:
+  #   external: true
