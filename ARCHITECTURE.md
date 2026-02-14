@@ -558,7 +558,7 @@ services:
   api:
     build: ./backend
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/xhs_platform
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/nmop
       - REDIS_URL=redis://redis:6379/0
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
       - ARK_API_KEY=${ARK_API_KEY}
@@ -576,7 +576,7 @@ services:
     build: ./backend
     command: celery -A app.tasks.celery_app worker --loglevel=info
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/xhs_platform
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/nmop
       - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672/
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
     depends_on:
@@ -603,7 +603,7 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=xhs_platform
+      - POSTGRES_DB=nmop
 
   # Redis
   redis:
@@ -673,7 +673,7 @@ API_KEY=xhs_agent_internal_key
 FRONTEND_URL=http://localhost
 
 # === 数据库配置 ===
-DATABASE_URL=postgresql://postgres:postgres@postgres:5432/xhs_platform
+DATABASE_URL=postgresql://postgres:postgres@postgres:5432/nmop
 REDIS_URL=redis://localhost:6379/0
 RABBITMQ_URL=amqp://guest:guest@localhost:5672/
 
@@ -862,7 +862,7 @@ flowchart TD
 
 # 克隆项目
 git clone https://github.com/Jenny-Huijing/openclaw-mop.git
-cd xhs_platform
+cd nmop
 ```
 
 #### 步骤2: 配置环境变量
@@ -948,7 +948,7 @@ docker-compose down -v              # 停止并删除容器+数据卷（危险�
 
 # 进入容器调试
 docker exec -it xhs_api bash
-docker exec -it xhs_postgres psql -U postgres -d xhs_platform
+docker exec -it xhs_postgres psql -U postgres -d nmop
 
 # 查看资源使用
 docker stats
@@ -958,13 +958,13 @@ docker stats
 
 ```bash
 # 备份数据库
-docker exec xhs_postgres pg_dump -U postgres xhs_platform > backup_$(date +%Y%m%d).sql
+docker exec xhs_postgres pg_dump -U postgres nmop > backup_$(date +%Y%m%d).sql
 
 # 恢复数据库
-docker exec -i xhs_postgres psql -U postgres -d xhs_platform < backup_20260214.sql
+docker exec -i xhs_postgres psql -U postgres -d nmop < backup_20260214.sql
 
 # 备份数据卷
-docker run --rm -v xhs_platform_postgres_data:/data -v $(pwd):/backup alpine tar czf /backup/postgres_backup.tar.gz -C /data .
+docker run --rm -v nmop_postgres_data:/data -v $(pwd):/backup alpine tar czf /backup/postgres_backup.tar.gz -C /data .
 ```
 
 ### 11.4 更新部署
@@ -1031,7 +1031,7 @@ npm run dev
 ## 13. 项目目录结构
 
 ```
-xhs_platform/
+nmop/
 ├── README.md                 # 项目说明
 ├── ARCHITECTURE.md          # 架构文档 (本文档)
 ├── docker-compose.yml       # Docker编排

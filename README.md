@@ -24,7 +24,7 @@ AI驱动的内容创作工作台，实现从热点发现、智能创作到发布
 ```bash
 # 1. 克隆项目
 git clone <repo-url>
-cd xhs_platform
+cd nmop
 
 # 2. 配置环境变量
 cp .env.example .env
@@ -132,7 +132,7 @@ flowchart LR
 ## 📁 项目结构
 
 ```
-xhs_platform/
+nmop/
 ├── 📄 README.md                 # 本文件
 ├── 📄 ARCHITECTURE.md           # 详细架构设计
 ├── 📄 docker-compose.yml        # Docker编排
@@ -226,10 +226,10 @@ docker-compose logs -f api
 docker-compose exec api bash
 
 # 数据库操作
-docker exec xhs_postgres psql -U postgres -d xhs_platform
+docker exec xhs_postgres psql -U postgres -d nmop
 
 # 清空数据（危险！）
-docker exec xhs_postgres psql -U postgres -d xhs_platform \
+docker exec xhs_postgres psql -U postgres -d nmop \
   -c "TRUNCATE contents, hot_topics, workflow_logs RESTART IDENTITY;"
 
 # 完全重置

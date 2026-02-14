@@ -13,7 +13,7 @@ ALTER TABLE contents ADD COLUMN IF NOT EXISTS error_message TEXT;
 
 ```bash
 # 进入 PostgreSQL 容器
-docker exec -it xhs_postgres psql -U postgres -d xhs_platform -c "ALTER TABLE contents ADD COLUMN IF NOT EXISTS error_message TEXT;"
+docker exec -it xhs_postgres psql -U postgres -d nmop -c "ALTER TABLE contents ADD COLUMN IF NOT EXISTS error_message TEXT;"
 ```
 
 ## 说明

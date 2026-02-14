@@ -11,7 +11,7 @@ import json
 
 # 创建Celery应用
 celery_app = Celery(
-    "xhs_platform",
+    "nmop",
     broker=settings.CELERY_BROKER_URL,
     backend=settings.CELERY_RESULT_BACKEND,
     include=["app.tasks.content_tasks", "app.tasks.hotspot_tasks", "app.agents.hotspot_agent"]

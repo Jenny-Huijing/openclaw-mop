@@ -78,7 +78,7 @@ headers = {
 ## 🧪 测试命令
 
 ```bash
-cd /Users/irvinglu/.openclaw/workspace/xhs_platform/backend
+cd /Users/irvinglu/.openclaw/workspace/nmop/backend
 python3 ../scripts/test_mcp.py
 ```
 

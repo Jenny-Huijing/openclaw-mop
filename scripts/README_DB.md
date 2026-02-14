@@ -24,7 +24,7 @@ scripts/
 
 ```bash
 # 进入项目目录
-cd /Users/irvinglu/.openclaw/workspace/xhs_platform
+cd /Users/irvinglu/.openclaw/workspace/nmop
 
 # 方式1: 使用 SQLite (开发环境，无需额外安装)
 DB_TYPE=sqlite ./scripts/init_db.sh
@@ -35,7 +35,7 @@ DB_TYPE=postgresql \
   DB_PORT=5432 \
   DB_USER=postgres \
   DB_PASS=postgres \
-  DB_NAME=xhs_platform \
+  DB_NAME=nmop \
   ./scripts/init_db.sh
 ```
 
@@ -53,10 +53,10 @@ docker-compose up -d
 #### PostgreSQL
 ```bash
 # 创建数据库
-createdb xhs_platform
+createdb nmop
 
 # 执行初始化脚本
-psql -U postgres -d xhs_platform -f scripts/init_db.sql
+psql -U postgres -d nmop -f scripts/init_db.sql
 ```
 
 #### SQLite
@@ -65,7 +65,7 @@ psql -U postgres -d xhs_platform -f scripts/init_db.sql
 mkdir -p data
 
 # 初始化数据库
-sqlite3 data/xhs_platform.db < scripts/init_db_sqlite.sql
+sqlite3 data/nmop.db < scripts/init_db_sqlite.sql
 ```
 
 ---
@@ -123,12 +123,12 @@ cp .env.example .env
 
 #### SQLite 配置 (开发)
 ```bash
-DATABASE_URL=sqlite+aiosqlite:///./data/xhs_platform.db
+DATABASE_URL=sqlite+aiosqlite:///./data/nmop.db
 ```
 
 #### PostgreSQL 配置 (生产)
 ```bash
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/xhs_platform
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/nmop
 ```
 
 ### 3. 必需的环境变量
@@ -153,7 +153,7 @@ BRAVE_API_KEY=xxx
 ```bash
 # 1. 克隆项目
 git clone <repo-url>
-cd xhs_platform
+cd nmop
 
 # 2. 配置环境变量
 cp .env.example .env
@@ -189,19 +189,19 @@ python -m uvicorn app.main:app --reload
 #### PostgreSQL
 ```bash
 # 备份
-pg_dump -U postgres -d xhs_platform > backup_$(date +%Y%m%d).sql
+pg_dump -U postgres -d nmop > backup_$(date +%Y%m%d).sql
 
 # 恢复
-psql -U postgres -d xhs_platform < backup_20260212.sql
+psql -U postgres -d nmop < backup_20260212.sql
 ```
 
 #### SQLite
 ```bash
 # 备份
-cp data/xhs_platform.db backup_$(date +%Y%m%d).db
+cp data/nmop.db backup_$(date +%Y%m%d).db
 
 # 恢复
-cp backup_20260212.db data/xhs_platform.db
+cp backup_20260212.db data/nmop.db
 ```
 
 ### 清空数据
@@ -209,22 +209,22 @@ cp backup_20260212.db data/xhs_platform.db
 ```bash
 # 危险操作！仅用于开发测试
 # PostgreSQL
-psql -U postgres -d xhs_platform -c "TRUNCATE contents, hot_topics, content_metrics, workflow_logs RESTART IDENTITY;"
+psql -U postgres -d nmop -c "TRUNCATE contents, hot_topics, content_metrics, workflow_logs RESTART IDENTITY;"
 
 # SQLite
-sqlite3 data/xhs_platform.db "DELETE FROM contents; DELETE FROM hot_topics;"
+sqlite3 data/nmop.db "DELETE FROM contents; DELETE FROM hot_topics;"
 ```
 
 ### 查看表结构
 
 ```bash
 # PostgreSQL
-psql -U postgres -d xhs_platform -c "\dt"
-psql -U postgres -d xhs_platform -c "\d contents"
+psql -U postgres -d nmop -c "\dt"
+psql -U postgres -d nmop -c "\d contents"
 
 # SQLite
-sqlite3 data/xhs_platform.db ".tables"
-sqlite3 data/xhs_platform.db ".schema contents"
+sqlite3 data/nmop.db ".tables"
+sqlite3 data/nmop.db ".schema contents"
 ```
 
 ---
@@ -257,7 +257,7 @@ docker-compose restart postgres
 ./scripts/init_db.sh
 
 # 或在 docker 中执行
-docker exec -i xhs_postgres psql -U postgres -d xhs_platform < scripts/init_db.sql
+docker exec -i xhs_postgres psql -U postgres -d nmop < scripts/init_db.sql
 ```
 
 ### 问题3: 权限错误
@@ -279,7 +279,7 @@ docker exec xhs_postgres psql -U postgres -c "GRANT ALL ON SCHEMA public TO post
 ```bash
 # SQLite 导出
 cd data
-sqlite3 xhs_platform.db ".dump" > dump.sql
+sqlite3 nmop.db ".dump" > dump.sql
 ```
 
 ### 步骤2: 生产环境初始化
@@ -287,7 +287,7 @@ sqlite3 xhs_platform.db ".dump" > dump.sql
 ```bash
 # 服务器上
 git clone <repo-url>
-cd xhs_platform
+cd nmop
 
 # 配置生产环境变量
 cp .env.example .env

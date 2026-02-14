@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     API_KEY: str = "xhs_agent_internal_key"
     
     # 数据库 (使用 PostgreSQL)
-    DATABASE_URL: str = "postgresql://postgres:postgres@postgres:5432/xhs_platform"
+    DATABASE_URL: str = "postgresql://postgres:postgres@postgres:5432/nmop"
     
     # Redis
     REDIS_URL: str = "redis://localhost:6379/0"

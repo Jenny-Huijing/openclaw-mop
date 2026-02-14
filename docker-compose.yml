@@ -60,6 +60,8 @@ services:
       - ./backend/app:/app/app:ro
       # 挂载小红书 Cookie 文件
       - ./mcp/data/cookies.json:/app/data/cookies.json:ro
+      # 挂载通知目录，供 OpenClaw 读取
+      - ./backend/data/notifications:/app/data/notifications
       # Docker socket 和客户端用于获取容器日志
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /usr/local/bin/docker:/usr/bin/docker:ro
@@ -93,6 +95,9 @@ services:
       - MCP_URL=http://host.docker.internal:18060/mcp
       - MCP_ENABLED=true
       - XHS_USER_ID=5b52f8f611be101ae93e1671
+    volumes:
+      # 挂载通知目录，供 OpenClaw 读取
+      - ./backend/data/notifications:/app/data/notifications
     depends_on:
       - postgres
       - rabbitmq
@@ -118,6 +123,9 @@ services:
       - MCP_URL=http://host.docker.internal:18060/mcp
       - MCP_ENABLED=true
       - XHS_USER_ID=5b52f8f611be101ae93e1671
+    volumes:
+      # 挂载通知目录，供 OpenClaw 读取
+      - ./backend/data/notifications:/app/data/notifications
     depends_on:
       - postgres
       - rabbitmq
@@ -133,7 +141,7 @@ services:
       - TZ=Asia/Shanghai
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=xhs_platform
+      - POSTGRES_DB=nmop
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
